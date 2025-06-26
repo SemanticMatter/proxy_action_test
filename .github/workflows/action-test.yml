@@ -1,0 +1,29 @@
+---
+name: CI
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch: null
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH proxy test
+        uses: appleboy/ssh-action@v1
+        with:
+          proxy_host: ${{ secrets.SSH_PROXY_HOST }}
+          proxy_port: ${{ secrets.SSH_PROXY_PORT }}
+          proxy_username: ${{ secrets.SSH_PROXY_USERNAME }}
+          proxy_key: ${{ secrets.SSH_PROXY_PRIVATE_KEY }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "SSH connection successful!"
+            echo "Running a test command..."
+            whoami
+            echo "Test command executed successfully.
