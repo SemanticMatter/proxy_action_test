@@ -12,9 +12,30 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Quick connectivity probe
+        run: |
+          set -e
+          sudo apt-get update -qq
+          sudo apt-get install -y netcat-openbsd openssh-client
+          echo "Runner public IP:"
+          curl -s https://api.ipify.org; echo
+
+          echo "===> DNS"
+          dig +short ${SSH_PROXY_HOST:-notset}
+          dig +short ${SSH_HOST:-notset}
+
+          echo "===> Raw TCP to proxy"
+          nc -vz -w5 ${{ secrets.SSH_PROXY_HOST }} ${{ secrets.SSH_PROXY_PORT }} || true
+
+          echo "===> Raw TCP to target *from the runner* (should time-out if target is private)"
+          nc -vz -w5 ${{ secrets.SSH_HOST }} 22 || true
+
       - name: SSH proxy test
         uses: appleboy/ssh-action@v1
         with:
+          debug: true
+          timeout: 60s
+          proxy_timeout: 60s
           proxy_host: ${{ secrets.SSH_PROXY_HOST }}
           proxy_port: ${{ secrets.SSH_PROXY_PORT }}
           proxy_username: ${{ secrets.SSH_PROXY_USERNAME }}
