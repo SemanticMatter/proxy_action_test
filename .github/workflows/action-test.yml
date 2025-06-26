@@ -12,39 +12,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Quick connectivity probe
-        run: |
-          set -e
-          sudo apt-get update -qq
-          sudo apt-get install -y netcat-openbsd openssh-client
-          echo "Runner public IP:"
-          curl -s https://api.ipify.org; echo
-
-          echo "===> DNS"
-          dig +short ${SSH_PROXY_HOST:-notset}
-          dig +short ${SSH_HOST:-notset}
-
-          echo "===> Raw TCP to proxy"
-          nc -vz -w5 ${{ secrets.SSH_PROXY_HOST }} ${{ secrets.SSH_PROXY_PORT }} || true
-
-          echo "===> Raw TCP to target *from the runner* (should time-out if target is private)"
-          nc -vz -w5 ${{ secrets.SSH_HOST }} 22 || true
-
-      - name: SSH proxy test
-        uses: appleboy/ssh-action@v1
-        with:
-          debug: true
-          timeout: 60s
-          proxy_timeout: 60s
-          proxy_host: ${{ secrets.SSH_PROXY_HOST }}
-          proxy_port: ${{ secrets.SSH_PROXY_PORT }}
-          proxy_username: ${{ secrets.SSH_PROXY_USERNAME }}
-          proxy_key: ${{ secrets.SSH_PROXY_PRIVATE_KEY }}
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            echo "SSH connection successful!"
-            echo "Running a test command..."
-            ls -al
-            echo "Test command executed successfully.
+    - name: Multi-hop SSH to target via two jumps
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.SSH_PROXY_HOST }}         # jumphost
+        username: ${{ secrets.SSH_PROXY_USERNAME }}
+        key: ${{ secrets.SSH_PROXY_PRIVATE_KEY }}
+        script: |
+          ssh -o StrictHostKeyChecking=no \
+              -i ~/.ssh/internal_key \
+              -J ${{ secrets.INTERNAL_USER }}@${{ secrets.INTERNAL_HOST }} \
+              ${{ secrets.TARGET_USER }}@${{ secrets.TARGET_HOST }} \
+              "echo 'Connected to target host!'; hostname; ls -l /tmp"
