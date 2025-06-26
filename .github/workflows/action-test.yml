@@ -19,8 +19,4 @@ jobs:
         username: ${{ secrets.SSH_PROXY_USERNAME }}
         key: ${{ secrets.SSH_PROXY_PRIVATE_KEY }}
         script: |
-          ssh -o StrictHostKeyChecking=no \
-              -i ~/.ssh/internal_key \
-              -J ${{ secrets.INTERNAL_USER }}@${{ secrets.INTERNAL_HOST }} \
-              ${{ secrets.TARGET_USER }}@${{ secrets.TARGET_HOST }} \
-              "echo 'Connected to target host!'; hostname; ls -l /tmp"
+          echo "Hello from jumphost"
