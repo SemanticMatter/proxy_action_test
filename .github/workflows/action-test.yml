@@ -25,5 +25,5 @@ jobs:
           script: |
             echo "SSH connection successful!"
             echo "Running a test command..."
-            whoami
+            ls -al
             echo "Test command executed successfully.
