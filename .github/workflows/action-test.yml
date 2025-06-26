@@ -10,8 +10,12 @@ on:
   workflow_dispatch: null
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: semanticmatter
+    
     steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
     - name: Multi-hop SSH to target via two jumps
       uses: appleboy/ssh-action@v1
       with:
