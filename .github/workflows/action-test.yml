@@ -16,11 +16,5 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
       
-    - name: Multi-hop SSH to target via two jumps
-      uses: appleboy/ssh-action@v1
-      with:
-        host: ${{ secrets.SSH_PROXY_HOST }}         # jumphost
-        username: ${{ secrets.SSH_PROXY_USERNAME }}
-        key: ${{ secrets.SSH_PROXY_PRIVATE_KEY }}
-        script: |
-          echo "Hello from jumphost"
+    - name: Testing
+      run: echo "Hello from semanticmatter"
